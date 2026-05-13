@@ -89,6 +89,64 @@ function insertSnippet(before: string, after: string, space: string) {
 
 export function activate(context: vscode.ExtensionContext) {
 
+	const convertArrowToBlock = vscode.commands.registerCommand(
+		'flutterWrap.convertArrowToBlock',
+		async () => {
+			const editor = vscode.window.activeTextEditor;
+			if (!editor) return;
+
+			const document = editor.document;
+			const position = editor.selection.active;
+
+			const fullText = document.getText();
+
+			const offset = document.offsetAt(position);
+
+			// Find nearest arrow before cursor
+			const arrowIndex = fullText.lastIndexOf('=>', offset);
+
+			if (arrowIndex === -1) {
+				vscode.window.showInformationMessage(
+					'No arrow function found.'
+				);
+				return;
+			}
+
+			// Find semicolon ending function
+			const semicolonIndex = fullText.indexOf(';', arrowIndex);
+
+			if (semicolonIndex === -1) return;
+
+			const functionText = fullText.substring(
+				arrowIndex,
+				semicolonIndex + 1
+			);
+
+			// Get body after =>
+			const body = functionText
+				.replace(/^=>/, '')
+				.replace(/;$/, '')
+				.trim();
+
+			const replacement = `{\n  final theme = Theme.of(context);\nfinal colors = theme.colorScheme;\n  return ${body};\n}`;
+
+			const start = document.positionAt(arrowIndex);
+			const end = document.positionAt(semicolonIndex + 1);
+
+			await editor.edit(editBuilder => {
+				editBuilder.replace(
+					new vscode.Range(start, end),
+					replacement
+				);
+			});
+
+			await vscode.commands.executeCommand(
+				'editor.action.formatDocument'
+			);
+		}
+	);
+
+
 	const wrapContainer = vscode.commands.registerCommand(
 		'flutterWrap.wrapWidget',
 		() => {
@@ -206,7 +264,7 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 
-	context.subscriptions.push(wrapContainer, unwrap, wrapStacked);
+	context.subscriptions.push(wrapContainer, unwrap, wrapStacked, convertArrowToBlock);
 }
 
 export function deactivate() { }

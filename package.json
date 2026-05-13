@@ -20,6 +20,10 @@
         "title": "Wrap with Container"
       },
       {
+        "command": "flutterWrap.convertArrowToBlock",
+        "title": "Convert to block"
+      },
+      {
         "command": "flutterWrap.wrapStacked",
         "title": "Wrap with Stacked"
       },
@@ -32,6 +36,11 @@
       {
         "command": "flutterWrap.wrapWidget",
         "key": "alt+c",
+        "when": "editorTextFocus && editorLangId == dart"
+      },
+      {
+        "command": "flutterWrap.convertArrowToBlock",
+        "key": "alt+a",
         "when": "editorTextFocus && editorLangId == dart"
       },
       {
